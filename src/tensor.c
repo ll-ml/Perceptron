@@ -2,6 +2,23 @@
 #include "tensor.h"
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
+
+
+Tensor* tensor_rand(int shape[], int num_dimensions) {
+    srand(time(NULL)); // TODO: fix
+    Tensor* t = create_tensor(shape, num_dimensions);
+
+    switch(t->num_dimensions) {
+        case VECTOR:
+            for (int i = 0; i < t->shape[0]; i++) {
+                t->data[0][i] = (float)rand()/(float)(RAND_MAX) * 5.0;
+            }
+    }
+
+    return t;
+}
+
 
 Tensor* create_tensor(int shape[], int num_dimensions) {
     Tensor* tensor = (Tensor*)malloc(sizeof(Tensor));
@@ -45,13 +62,20 @@ Tensor* create_tensor(int shape[], int num_dimensions) {
 }
 
 void free_tensor(Tensor* tensor) {
-    for (int i = 0; i < tensor->shape[0]; i++) {
-        free(tensor->data[i]);
+    switch (tensor->num_dimensions) {
+        case VECTOR:
+            free(tensor->data[0]);
+            free(tensor->data);
+            break;
+        case MATRIX:
+            for (int i = 0; i < tensor->shape[0]; i++) {
+                free(tensor->data[i]);
+            }
+            free(tensor->data);
+            break;
     }
-    free(tensor->data);
+
     free(tensor->shape);
     free(tensor->device);
     free(tensor);
 }
-
-// Implement other tensor-related functions

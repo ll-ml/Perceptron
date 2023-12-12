@@ -10,11 +10,12 @@
 typedef struct {
     float** data;
     int* shape;
-    int num_dimensions;
+    int num_dimensions; //possible rename to dims
     char* device;
 } Tensor;
 
 Tensor* create_tensor(int shape[], int num_dimensions);
+Tensor* tensor_rand(int shape[], int num_dimensions);
 void free_tensor(Tensor* tensor);
 // Other tensor-related functions
 

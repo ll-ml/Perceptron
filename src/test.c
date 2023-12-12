@@ -6,7 +6,7 @@
 // Include your tensor.h here
 #include "tensor.h"
 
-void test_create_tensor() {
+void test_tensors() {
     // Test case 1
     puts("Starting tensors test...\n");
     int shape1[] = {2};
@@ -21,7 +21,7 @@ void test_create_tensor() {
 
     free_tensor(tensor1);
     tensor1 = NULL;
-    puts("TEST 1: PASSED!");
+    puts("CREATE VECTOR TEST: PASSED...");
 
     // Test case 2
     int shape2[] = {28, 28};
@@ -39,15 +39,28 @@ void test_create_tensor() {
 
     free_tensor(tensor2);
     tensor2 = NULL;
-    puts("TEST 2: PASSED!");
+    puts("CREATE MATRIX TEST: PASSED...\n");
 
-    // Add more test cases as needed
+    int shape3[] = {20};
+    Tensor* tensor3 = tensor_rand(shape3, 1);
+    if (!tensor3) {
+        fprintf(stderr, "ERROR creating tensor\n");
+        return;
+    }
+    printf("Random vector shape(%d): \n", tensor3->shape[0]);
+    printf("[ ");
+
+    for (int i = 0; i < tensor3->shape[0]; i++) {
+        printf("%.2f ", tensor3->data[0][i]);
+    }
+    printf("]");
+    free(tensor3);
 }
 
 int main() {
-    test_create_tensor();
+    test_tensors();
 
-    printf("All tests passed!\n");
+    printf("\n\nAll tests passed!\n");
 
     return 0;
 }
