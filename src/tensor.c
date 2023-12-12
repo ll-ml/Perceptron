@@ -10,7 +10,7 @@ Tensor* dot(Tensor* t1, Tensor* t2) {
 
     if (t1->num_dimensions == VECTOR && t2->num_dimensions == VECTOR) {
         if (t1->shape[0] != t2->shape[0]) {
-            fprintf(stderr, "shapes (%d, ) and (%d, ) not aligned: %d (dim 0) != %d (dim 0", t1->shape[0], t2->shape[0], t1->shape[0], t2->shape[1]);
+            fprintf(stderr, "shapes (%d, ) and (%d, ) not aligned: %d (dim 0) != %d (dim 0)", t1->shape[0], t2->shape[0], t1->shape[0], t2->shape[0]);
             return result;
         }
 
@@ -22,6 +22,17 @@ Tensor* dot(Tensor* t1, Tensor* t2) {
             output+= t1->data[0][i] * t2->data[0][i];
         }
         result->data[0][0] = output;
+        return result;
+    }
+
+    if (t1->num_dimensions == MATRIX && t2->num_dimensions == VECTOR) {
+        if (t1->shape[1] != t2->shape[0]) {
+            fprintf(stderr, "shapes (%d, ) and (%d, ) not aligned: %d (dim 0) != %d (dim 0)", t1->shape[0], t2->shape[0], t1->shape[0], t2->shape[0]);
+            return result;
+        }
+        int shape[] = {t1->shape[1]}; 
+        result = create_tensor(shape, VECTOR);
+
     }
 
     /*
