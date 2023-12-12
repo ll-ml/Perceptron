@@ -9,15 +9,10 @@ Tensor* create_tensor(int shape[], int num_dimensions) {
         return NULL;
     }
 
-    int total_size = 1;
-    for(int i = 0; i < num_dimensions; i++) {
-        total_size *= shape[i];
-    }
-
     switch (num_dimensions) {
         case VECTOR:
             tensor->data = (float**)malloc(sizeof(float*));
-            tensor->data[0] = (float*)calloc(total_size, sizeof(float));
+            tensor->data[0] = (float*)calloc(shape[0], sizeof(float));
             break;
         case MATRIX:
             tensor->data = (float**)malloc(shape[0] * sizeof(float*));
@@ -27,21 +22,9 @@ Tensor* create_tensor(int shape[], int num_dimensions) {
             break;
     }
 
-    //Here we use calloc and take a slight performance hit. Could use malloc + memset alternatively.
-    //tensor->data = (float*)malloc(sizeof(float) * total_size);
-    /*
-    tensor->data = (float*)calloc(total_size, sizeof(float));
-    if (tensor->data == NULL) {
-        free(tensor->data);
-        return NULL;
-    }
-    */
-
-    tensor->shape = (int*)malloc(sizeof(int) * num_dimensions);
+    tensor->shape = (int*)calloc(num_dimensions, sizeof(int));
     if (tensor->shape == NULL) {
-        free(tensor->data);
-        free(tensor->shape);
-        free(tensor);
+        free_tensor(tensor);
         return NULL;
     }
 
@@ -53,10 +36,7 @@ Tensor* create_tensor(int shape[], int num_dimensions) {
     
     tensor->device = (char*)malloc(strlen("cpu") + 1);
     if (tensor->device == NULL) {
-        free(tensor->data);
-        free(tensor->shape);
-        free(tensor->device);
-        free(tensor);
+        free_tensor(tensor);
         return NULL;
     }
 
@@ -65,6 +45,9 @@ Tensor* create_tensor(int shape[], int num_dimensions) {
 }
 
 void free_tensor(Tensor* tensor) {
+    for (int i = 0; i < tensor->shape[0]; i++) {
+        free(tensor->data[i]);
+    }
     free(tensor->data);
     free(tensor->shape);
     free(tensor->device);
