@@ -53,14 +53,31 @@ void test_tensors() {
     for (int i = 0; i < tensor3->shape[0]; i++) {
         printf("%.2f ", tensor3->data[0][i]);
     }
-    printf("]");
+    printf("]\n\n");
     free(tensor3);
+
+    int shape4[] = {20, 20};
+    Tensor* tensor4 = tensor_rand(shape4, 2);
+    if (!tensor4) {
+        fprintf(stderr, "ERROR creating random matrix\n");
+        return;
+    }
+
+    printf("Random matrix shape(%d, %d)\n\n", tensor4->shape[0], tensor4->shape[1]);
+
+    for (int i = 0; i < tensor4->shape[0]; i++) {
+        for (int j = 0; j < tensor4->shape[1]; j++) {
+            printf("%.2f ", tensor4->data[i][j]);
+        }
+        puts("\n");
+    }
+
 }
 
 int main() {
     test_tensors();
 
-    printf("\n\nAll tests passed!\n");
+    puts("\n\nAll tests passed!");
 
     return 0;
 }

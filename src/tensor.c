@@ -14,6 +14,14 @@ Tensor* tensor_rand(int shape[], int num_dimensions) {
             for (int i = 0; i < t->shape[0]; i++) {
                 t->data[0][i] = (float)rand()/(float)(RAND_MAX) * 5.0;
             }
+            break;
+        case MATRIX:
+            for (int i = 0; i < t->shape[0]; i++) {
+                for (int j = 0; j < t->shape[1]; j++) {
+                    t->data[i][j] = (float)rand()/(float)(RAND_MAX) * 5.0;
+                }
+            }
+            break;
     }
 
     return t;
