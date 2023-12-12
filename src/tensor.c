@@ -2,11 +2,41 @@
 #include "tensor.h"
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 #include <time.h>
+
+Tensor* dot(Tensor* t1, Tensor* t2) {
+    Tensor* result = NULL;
+
+    if (t1->num_dimensions == VECTOR && t2->num_dimensions == VECTOR) {
+        if (t1->shape[0] != t2->shape[0]) {
+            fprintf(stderr, "shapes (%d, ) and (%d, ) not aligned: %d (dim 0) != %d (dim 0", t1->shape[0], t2->shape[0], t1->shape[0], t2->shape[1]);
+            return result;
+        }
+
+        int shape[] = {1};
+        result = create_tensor(shape, 1);
+        float output = 0.0F;
+
+        for (int i = 0; i < t1->shape[0]; i++) {
+            output+= t1->data[0][i] * t2->data[0][i];
+        }
+        result->data[0][0] = output;
+    }
+
+    /*
+    if (t1->shape[0] != t2->shape[1]) {
+        fprintf(stderr, "shape error dim0 != dim1 (%d != %d)\n", t1->shape[0], t2->shape[1]);
+    }
+    */
+    return result;
+}
 
 
 Tensor* tensor_rand(int shape[], int num_dimensions) {
-    srand(time(NULL)); // TODO: fix
+    unsigned int seed = (unsigned int)time(NULL) + (unsigned int)clock();
+    srand(seed);
+    
     Tensor* t = create_tensor(shape, num_dimensions);
 
     switch(t->num_dimensions) {
@@ -26,7 +56,6 @@ Tensor* tensor_rand(int shape[], int num_dimensions) {
 
     return t;
 }
-
 
 Tensor* create_tensor(int shape[], int num_dimensions) {
     Tensor* tensor = (Tensor*)malloc(sizeof(Tensor));
@@ -67,6 +96,24 @@ Tensor* create_tensor(int shape[], int num_dimensions) {
 
     strcpy(tensor->device, "cpu");
     return tensor;
+}
+
+void print_tensor(Tensor* tensor) {
+    switch (tensor->num_dimensions) {
+        case VECTOR: 
+            for (int i = 0; i < tensor->shape[0]; i++) {
+                printf("%.2f ", tensor->data[0][i]);
+            }
+            puts("\n");
+            break;
+        case MATRIX:
+            for (int i = 0; i < tensor->shape[0]; i++) {
+                for (int j = 0; j < tensor->shape[1]; j++) {
+                    printf("%.2f ", tensor->data[i][j]);
+                }
+                puts("\n");
+            }
+    }
 }
 
 void free_tensor(Tensor* tensor) {

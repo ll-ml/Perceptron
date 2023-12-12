@@ -14,9 +14,14 @@ typedef struct {
     char* device;
 } Tensor;
 
+//Alloc + dealloc
 Tensor* create_tensor(int shape[], int num_dimensions);
 Tensor* tensor_rand(int shape[], int num_dimensions);
 void free_tensor(Tensor* tensor);
-// Other tensor-related functions
 
+//Ops
+Tensor* dot(Tensor* t1, Tensor* t2);
+
+//Other
+void print_tensor(Tensor* tensor);
 #endif // TENSOR_H
