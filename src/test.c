@@ -4,16 +4,20 @@
 #include <assert.h>
 #include <math.h>
 
-// Include your tensor.h here
 #include "tensor.h"
 #include "activations.h"
 
 void test_tensors() {
-    int shape[] = {28, 28}; 
-    Tensor* t = tensor_rand(shape, MATRIX);
+    //Matrix
+    int shape[] = {10, 10};
+
+    Tensor* t = tensor_rand(shape, 2);
+
     print_tensor(t);
-    tanh_tensor(t);
-    puts("--------------------------------------------------------------------------------------------\n");
+    
+    puts("----------------------------------------------------------------\n");
+
+    relu_tensor(t);
     print_tensor(t);
 }
 

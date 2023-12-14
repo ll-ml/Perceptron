@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <math.h>
 #include <time.h>
 
 Tensor* dot(Tensor* t1, Tensor* t2) {
@@ -43,23 +44,45 @@ Tensor* dot(Tensor* t1, Tensor* t2) {
     return result;
 }
 
+float random_gamma(float shape, float scale) {
+    srand((unsigned int)time(NULL) + (unsigned int)clock());
+    float b, c;
+    float U, V, X, Y, Z, S, D;
+    
+    b = shape - 1.0 / 3.0;
+    c = 1.0 / sqrt(9.0 * b);
+    
+    do {
+        do {
+            // Generate two independent random variables U and V from a uniform distribution in (0, 1)
+            U = (float)rand() / RAND_MAX;
+            V = (float)rand() / RAND_MAX;
+            
+            X = c * (6.0F * U - 3.0F);
+            Y = fabs(c * V);
+        } while (fabs(X) > 1.0F || Y > 1.0F);
+
+        Z = X * X * X;
+        S = 1.0 + 0.33267F * X + 0.06377F * Z;
+        D = 1.0 - exp(-X * X / 2.0) / sqrt(2.0F * M_PI);
+    } while (rand() / (float)RAND_MAX > D && Y > 1.0F / (2.0F * S));
+
+    return b * Z * scale;
+}
 
 Tensor* tensor_rand(int shape[], int num_dimensions) {
-    unsigned int seed = (unsigned int)time(NULL) + (unsigned int)clock();
-    srand(seed);
-    
     Tensor* t = create_tensor(shape, num_dimensions);
 
     switch(t->num_dimensions) {
         case VECTOR:
             for (int i = 0; i < t->shape[0]; i++) {
-                t->data[0][i] = (float)rand()/(float)(RAND_MAX) * 5.0;
+                t->data[0][i] = (float)random_gamma(22.0, 22.0);
             }
             break;
         case MATRIX:
             for (int i = 0; i < t->shape[0]; i++) {
                 for (int j = 0; j < t->shape[1]; j++) {
-                    t->data[i][j] = (float)rand()/(float)(RAND_MAX) * 5.0;
+                    t->data[i][j] = (float)random_gamma(2.0, 1.0);
                 }
             }
             break;
