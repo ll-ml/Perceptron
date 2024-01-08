@@ -26,21 +26,48 @@ Tensor* dot(Tensor* t1, Tensor* t2) {
         return result;
     }
 
+    if (t1->num_dimensions == VECTOR && t2->num_dimensions == MATRIX) {
+        fprintf(stderr, "shape error: have tensor 1: VECTOR, tensor 2: MATRIX need tensor 1 : MARTIX tensor 2: VECTOR");
+        return result;
+    }
+
     if (t1->num_dimensions == MATRIX && t2->num_dimensions == VECTOR) {
         if (t1->shape[1] != t2->shape[0]) {
             fprintf(stderr, "shapes (%d, ) and (%d, ) not aligned: %d (dim 0) != %d (dim 0)", t1->shape[0], t2->shape[0], t1->shape[0], t2->shape[0]);
             return result;
         }
-        int shape[] = {t1->shape[1]}; 
-        result = create_tensor(shape, VECTOR);
+        result = create_tensor(&t1->shape[0], VECTOR);
 
+        for (int i = 0; i < t1->shape[0]; i++) {
+            float scalar_res = 0;
+            for (int j = 0; j < t1->shape[1]; j++) {
+                scalar_res+= t1->data[i][j] * t2->data[0][j];
+            }
+            result->data[0][i] = scalar_res;
+        }
     }
 
-    /*
-    if (t1->shape[0] != t2->shape[1]) {
-        fprintf(stderr, "shape error dim0 != dim1 (%d != %d)\n", t1->shape[0], t2->shape[1]);
+    //tensor one cols MUST equal the rows of tensor two hence the additional check
+    if (t1->num_dimensions == MATRIX && t2->num_dimensions == MATRIX && t1->shape[1] == t2->shape[0]) {
+        //result->num_dimensions = MATRIX;
+        //the shape will be the rows from tensor one and the cols of tensor two
+        int matrix_shape[] = {t1->shape[0], t2->shape[1]};
+        result = create_tensor(matrix_shape, MATRIX);
+
+        //rows of tensor one 
+        for (int i = 0; i < t1->shape[0]; i++) {
+            //cols of column two
+            for (int j = 0; j < t2->shape[1]; j++) {
+                float sum = 0;
+                for(int k = 0; k < t2->shape[0]; k++) {
+                    sum += t1->data[i][k] * t2->data[k][j];
+                }
+                result->data[i][j] = sum;
+            }
+
+        }
     }
-    */
+
     return result;
 }
 
@@ -70,6 +97,12 @@ float random_gamma(float shape, float scale) {
     return b * Z * scale;
 }
 
+/**
+   @brief Generate random tensor using the gamma distribution. 
+   @param shape the dimensions of your tensor. Examples: for matrix of 3x4 (ROWxCOL) int shape[] = {3, 4}
+   @param num_dimensions essentially meta data for ease of use and simple retrival of type of tensor. Use VECTOR or MATRIX.
+   @return Random tensor of desired shape on success and null on fail.
+ */
 Tensor* tensor_rand(int shape[], int num_dimensions) {
     Tensor* t = create_tensor(shape, num_dimensions);
 
@@ -91,6 +124,12 @@ Tensor* tensor_rand(int shape[], int num_dimensions) {
     return t;
 }
 
+/**
+   @brief Memory allocation for tensors.  
+   @param shape the dimensions of your tensor. Examples: for matrix of 3x4 (ROWxCOL) int shape[] = {3, 4}
+   @param num_dimensions essentially meta data for ease of use and simple retrival of type of tensor. Use VECTOR or MATRIX.
+   @return Tensor containing all 0's of desired shape on success and null on fail.
+ */
 Tensor* create_tensor(int shape[], int num_dimensions) {
     Tensor* tensor = (Tensor*)malloc(sizeof(Tensor));
     if (tensor == NULL) {
