@@ -6,7 +6,7 @@
 #include <math.h>
 #include <time.h>
 
-Tensor* dot(Tensor* t1, Tensor* t2) {
+Tensor* dot(const Tensor* t1, const Tensor* t2) {
     Tensor* result = NULL;
 
     if (t1->num_dimensions == VECTOR && t2->num_dimensions == VECTOR) {
@@ -124,54 +124,72 @@ Tensor* tensor_rand(int shape[], int num_dimensions) {
     return t;
 }
 
-/**
-   @brief Memory allocation for tensors.  
-   @param shape the dimensions of your tensor. Examples: for matrix of 3x4 (ROWxCOL) int shape[] = {3, 4}
-   @param num_dimensions essentially meta data for ease of use and simple retrival of type of tensor. Use VECTOR or MATRIX.
-   @return Tensor containing all 0's of desired shape on success and null on fail.
- */
 Tensor* create_tensor(int shape[], int num_dimensions) {
-    Tensor* tensor = (Tensor*)malloc(sizeof(Tensor));
+    if (shape == NULL || num_dimensions <= 0 || num_dimensions >= 3) {
+        fprintf(stderr, "Invalid tensor parameters\n");
+        return NULL;
+    }
+
+    Tensor* tensor = (Tensor*)calloc(1, sizeof(Tensor));
     if (tensor == NULL) {
+        fprintf(stderr, "Failed to allocate tensor structure\n");
         return NULL;
     }
 
-    switch (num_dimensions) {
-        case VECTOR:
-            tensor->data = (float**)malloc(sizeof(float*));
-            tensor->data[0] = (float*)calloc(shape[0], sizeof(float));
-            break;
-        case MATRIX:
-            tensor->data = (float**)malloc(shape[0] * sizeof(float*));
-            for(int i = 0; i < shape[0]; i++) {
-                tensor->data[i] = (float*)calloc(shape[1], sizeof(float));
-            }
-            break;
-    }
+    tensor->total_size = get_total_size(shape, num_dimensions);
 
-    tensor->shape = (int*)calloc(num_dimensions, sizeof(int));
+    tensor->shape = (int*)malloc(num_dimensions * sizeof(int));
     if (tensor->shape == NULL) {
-        free_tensor(tensor);
+        free(tensor);
         return NULL;
     }
-
-    for(int i = 0; i < num_dimensions; i++) {
-        tensor->shape[i] = shape[i];
-    }
-
+    memcpy(tensor->shape, shape, num_dimensions * sizeof(int));
     tensor->num_dimensions = num_dimensions;
-    
-    tensor->device = (char*)malloc(strlen("cpu") + 1);
-    if (tensor->device == NULL) {
-        free_tensor(tensor);
-        return NULL;
+
+    if (num_dimensions == 1) {
+        tensor->data = (float**)malloc(sizeof(float*)); // One float ptr as its a vector
+        if (tensor->data == NULL) {
+            free(tensor->shape);
+            free(tensor);
+            return NULL;
+        }
+        
+        tensor->data[0] = (float*)calloc(shape[0], sizeof(float));
+        if (tensor->data[0] == NULL) {
+            free(tensor->data);
+            free(tensor->shape);
+            free(tensor);
+            return NULL;
+        }
+    } else if (num_dimensions == 2) {
+        tensor->data = (float**)malloc(sizeof(float*) * shape[0]); // grab first dim from shape
+        if (tensor->data == NULL) {
+            free(tensor->shape);
+            free(tensor);
+            return NULL;
+        }
+
+        float* data_block = (float*)calloc(tensor->total_size, sizeof(float));
+        if (data_block == NULL) {
+            free(tensor->data);
+            free(tensor->shape);
+            free(tensor);
+            return NULL;
+        }
+
+        for (int i = 0; i < shape[0]; i++) {
+            tensor->data[i] = data_block + i * shape[1];
+        }
     }
 
-    strcpy(tensor->device, "cpu");
+    tensor->device = strdup("cpu");
+    tensor->requires_grad = false;
+    tensor->grad = NULL;
+
     return tensor;
 }
 
-void print_tensor(Tensor* tensor) {
+void print_tensor(const Tensor* tensor) {
     switch (tensor->num_dimensions) {
         case VECTOR: 
             for (int i = 0; i < tensor->shape[0]; i++) {
