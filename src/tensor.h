@@ -20,14 +20,14 @@ typedef enum {
 } InitType;
 
 // Tensor
-typedef struct {
+typedef struct Tensor {
     float** data;
     int* shape;
     int num_dimensions;
     int total_size;
     char* device;
     bool requires_grad;
-    float** grad; 
+    struct Tensor* grad; 
 } Tensor;
 
 // Memory management
